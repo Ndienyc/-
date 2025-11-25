@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Админ-панель - Менеджер паролей{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h2>🔐 Административная панель</h2>
+    <p style="color: #666; margin-bottom: 30px;">Добро пожаловать, администратор <strong>{{ username }}</strong></p>
+    
+    <!-- Статистика -->
+    <div class="admin-stats">
+        <div class="stat-card">
+            <h3>👥 Всего пользователей</h3>
+            <p class="stat-number">{{ users|length }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>🔑 Всего паролей</h3>
+            <p class="stat-number">{{ all_passwords|length }}</p>
+        </div>
+    </div>
+    
+    <!-- Список пользователей -->
+    <div class="admin-section">
+        <h3>👥 Список пользователей</h3>
+        <div class="users-list">
+            {% for user in users %}
+            <div class="user-item">
+                <span class="user-icon">👤</span>
+                <span class="user-name">{{ user }}</span>
+                {% if user == 'admin' %}
+                <span class="admin-badge">Администратор</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Таблица всех паролей -->
+    <div class="admin-section">
+        <h3>🔑 Все пароли всех пользователей</h3>
+        
+        {% if all_passwords %}
+        <div class="passwords-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Пользователь</th>
+                        <th>Сервис</th>
+                        <th>Пароль</th>
+                        <th>Длина</th>
+                        <th>Сложность</th>
+                        <th>Дата создания</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pwd in all_passwords %}
+                    <tr>
+                        <td><strong>{{ pwd.username }}</strong></td>
+                        <td>{{ pwd.service }}</td>
+                        <td class="password-cell">
+                            <span class="password-hidden">••••••••</span>
+                            <span class="password-visible" style="display: none;">{{ pwd.password }}</span>
+                            <button class="btn-toggle" onclick="togglePassword(this)">👁️</button>
+                            <button class="btn-copy" onclick="copyPassword('{{ pwd.password }}')">📋</button>
+                        </td>
+                        <td>{{ pwd.length }}</td>
+                        <td>{{ pwd.complexity }}</td>
+                        <td>{{ pwd.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="no-passwords">Пока нет сохраненных паролей в системе</p>
+        {% endif %}
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="width: auto;">← Вернуться к моим паролям</a>
+    </div>
+</div>
+
+<script>
+function togglePassword(button) {
+    const cell = button.parentElement;
+    const hidden = cell.querySelector('.password-hidden');
+    const visible = cell.querySelector('.password-visible');
+    
+    if (hidden.style.display === 'none') {
+        hidden.style.display = 'inline';
+        visible.style.display = 'none';
+        button.textContent = '👁️';
+    } else {
+        hidden.style.display = 'none';
+        visible.style.display = 'inline';
+        button.textContent = '🙈';
+    }
+}
+
+function copyPassword(password) {
+    navigator.clipboard.writeText(password).then(() => {
+        alert('Пароль скопирован в буфер обмена!');
+    });
+}
+</script>
+{% endblock %}

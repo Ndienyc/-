@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Панель управления - Менеджер паролей{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h2>Генератор паролей</h2>
+    
+    <div class="generator-box">
+        <form method="POST" action="{{ url_for('dashboard') }}">
+            <div class="form-group">
+                <label for="service">Название сервиса</label>
+                <input type="text" id="service" name="service" placeholder="Например: Gmail, Facebook" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="length">Длина пароля: <span id="length-value">12</span></label>
+                <input type="range" id="length" name="length" min="6" max="32" value="12" oninput="document.getElementById('length-value').textContent = this.value">
+            </div>
+            
+            <div class="complexity-options">
+                <h4>Настройки сложности:</h4>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="uppercase" checked>
+                        Заглавные буквы (A-Z)
+                    </label>
+                    <label>
+                        <input type="checkbox" name="lowercase" checked>
+                        Строчные буквы (a-z)
+                    </label>
+                    <label>
+                        <input type="checkbox" name="digits" checked>
+                        Цифры (0-9)
+                    </label>
+                    <label>
+                        <input type="checkbox" name="special" checked>
+                        Специальные символы (!@#$%^&*)
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Сгенерировать пароль</button>
+        </form>
+    </div>
+    
+    <div class="passwords-section">
+        <h2>Сохраненные пароли</h2>
+        
+        {% if passwords %}
+        <div class="passwords-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Сервис</th>
+                        <th>Пользователь</th>
+                        <th>Пароль</th>
+                        <th>Длина</th>
+                        <th>Сложность</th>
+                        <th>Дата создания</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pwd in passwords %}
+                    <tr>
+                        <td>{{ pwd.service }}</td>
+                        <td>{{ username }}</td>
+                        <td class="password-cell">
+                            <span class="password-hidden">••••••••</span>
+                            <span class="password-visible" style="display: none;">{{ pwd.password }}</span>
+                            <button class="btn-toggle" onclick="togglePassword(this)">👁️</button>
+                            <button class="btn-copy" onclick="copyPassword('{{ pwd.password }}')">📋</button>
+                        </td>
+                        <td>{{ pwd.length }}</td>
+                        <td>{{ pwd.complexity }}</td>
+                        <td>{{ pwd.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="no-passwords">У вас пока нет сохраненных паролей. Создайте свой первый пароль!</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function togglePassword(button) {
+    const cell = button.parentElement;
+    const hidden = cell.querySelector('.password-hidden');
+    const visible = cell.querySelector('.password-visible');
+    
+    if (hidden.style.display === 'none') {
+        hidden.style.display = 'inline';
+        visible.style.display = 'none';
+        button.textContent = '👁️';
+    } else {
+        hidden.style.display = 'none';
+        visible.style.display = 'inline';
+        button.textContent = '🙈';
+    }
+}
+
+function copyPassword(password) {
+    navigator.clipboard.writeText(password).then(() => {
+        alert('Пароль скопирован в буфер обмена!');
+    });
+}
+</script>
+{% endblock %}
